@@ -27,9 +27,10 @@ class PostsOneUserAPI(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, pk):
         queryset = Post.objects.filter(user=pk).order_by('-date')
-        return Response({
-            'post_one_user': PostSerializers(queryset, many=True).data
-        })
+        return Response(
+            {'post_one_user': PostSerializers(queryset, many=True).data},
+            status=200,
+        )
 
 
 class ListUsersSortedCountPostsAPI(APIView):
@@ -40,9 +41,10 @@ class ListUsersSortedCountPostsAPI(APIView):
 
     def get(self, request):
         queryset = User.objects.all().order_by('-count_posts')
-        return Response({
-            'users_sorted': UsersListSerializers(queryset, many=True).data
-        })
+        return Response(
+            {'users_sorted': UsersListSerializers(queryset, many=True).data},
+            status=200,
+        )
 
 
 class ListUsersAPIView(APIView):
@@ -90,10 +92,15 @@ class AddFolowerView(APIView):
             )
             return Response(status=200)
         except:
-            return Response({'answer': 'на этого пользователя уже подписан'})
+            return Response(
+                {'answer': 'на этого пользователя уже подписан'},
+                status=400
+            )
 
 
 class UnFollowView(APIView):
+    """Для отмены подписки
+    """
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, pk):
@@ -101,16 +108,20 @@ class UnFollowView(APIView):
             folowers = get_object_or_404(Followers, user_id=pk)
             folowers.delete()
         except:
-            return Response({
-                "ошибка": "Вы не подписаны на этого пользователя"
-            })
+            return Response(
+                {"ошибка": "Вы не подписаны на этого пользователя"},
+                status=400,
+            )
 
-        return Response({
-            "готово": "Подписка отменена"
-        })
+        return Response(
+            {"готово": "Подписка отменена"},
+            status=200,
+        )
 
 
 class ListPostMyFollow(APIView):
+    """Посты моих подписчиков отсортированные по дате
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -137,6 +148,8 @@ class MyPostAPIView(APIView):
 
 
 class PostAPIView(generics.ListCreateAPIView):
+    """Для просмотра и добавления постов
+    """
     queryset = Post.objects.all()
     serializer_class = PostSerializers
     permission_classes = [IsAuthenticated]
